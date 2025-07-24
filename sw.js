@@ -1,127 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marine General Orders Audio Quiz</title>
-  <style>
-    body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #111; color: #eee; font-family: sans-serif; margin: 0; }
-    button { margin: 0.5em; padding: 1em 2em; font-size: 1em; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h1>Marine General Orders Audio Quiz</h1>
-  <div>
-    <button id="start">Play</button>
-    <button id="stop" disabled>Stop</button>
-  </div>
-  <script>
-    // Audio files: index 0 is question #1, index 1 is answer #1, etc.
-    const files = [
-      'audio/audio_0_What_is__the_first_general_order_.mp3',
-      'audio/audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
-      'audio/audio_2_What_is__the_second_general_order__.mp3',
-      'audio/audio_3__To_walk_my_post_in_a_military_manner__keeping_always_on_the_alert_and_observing_everything_that_tak~.mp3',
-      'audio/audio_4_What_is__the_third_general_order__.mp3',
-      'audio/audio_5__To_report_all_violations_of_orders_I_am_instructed_to_enforce_.mp3',
-      'audio/audio_6_What_is__the_fourth_general_order__.mp3',
-      'audio/audio_7__To_repeat_all_calls_from_posts_more_distant_from_the_guardhouse_than_my_own_.mp3',
-      'audio/audio_8_What_is__the_fifth_general_order__.mp3',
-      'audio/audio_9__To_quit_my_post_only_when_properly_relieved_.mp3',
-      'audio/audio_10_What_is__the_sixth_general_order__.mp3',
-      'audio/audio_11__To_receive__obey__and_pass_on_to_the_sentry_who_relieves_me__all_orders_from_the_commanding_officer~.mp3',
-      'audio/audio_12_What_is__the_seventh_general_order__.mp3',
-      'audio/audio_13__To_talk_to_no_one_except_in_line_of_duty_.mp3',
-      'audio/audio_14_What_is__the_eigtht_general_order__.mp3',
-      'audio/audio_15__To_give_the_alarm_in_case_of_fire_or_disorder_.mp3',
-      'audio/audio_16_What_is__the_nineth_general_order__.mp3',
-      'audio/audio_17_To_call_the_corporal_of_the_guard_in_any_case_not_covered_by_instructions_.mp3',
-      'audio/audio_18_What_is__the_tenth_general_order__.mp3',
-      'audio/audio_19_To_salute_all_officers_and_all_colors_and_standards_not_cased_.mp3',
-      'audio/audio_20_What_is__the_evelenth_general_order__.mp3',
-      'audio/audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3'
-    ];
+const cacheName = 'orders-v1';
+const assets = [
+  '/index.html',
+  '/manifest.json',
+  '/sw.js',
+  // your audio files:
+  '/audio/audio_0_What_is__the_first_general_order_.mp3',
+  '/audio/audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
+  '/audio/audio_2_What_is__the_second_general_order__.mp3',
+  '/audio/audio_3__To_walk_my_post_in_a_military_manner__keeping_always_on_the_alert_and_observing_everything_that_tak~.mp3',
+  '/audio/audio_4_What_is__the_third_general_order__.mp3',
+  '/audio/audio_5__To_report_all_violations_of_orders_I_am_instructed_to_enforce_.mp3',
+  '/audio/audio_6_What_is__the_fourth_general_order__.mp3',
+  '/audio/audio_7__To_repeat_all_calls_from_posts_more_distant_from_the_guardhouse_than_my_own_.mp3',
+  '/audio/audio_8_What_is__the_fifth_general_order__.mp3',
+  '/audio/audio_9__To_quit_my_post_only_when_properly_relieved_.mp3',
+  '/audio/audio_10_What_is__the_sixth_general_order__.mp3',
+  '/audio/audio_11__To_receive__obey__and_pass_on_to_the_sentry_who_relieves_me__all_orders_from_the_commanding_officer~.mp3',
+  '/audio/audio_12_What_is__the_seventh_general_order__.mp3',
+  '/audio/audio_13__To_talk_to_no_one_except_in_line_of_duty_.mp3',
+  '/audio/audio_14_What_is__the_eigtht_general_order__.mp3',
+  '/audio/audio_15__To_give_the_alarm_in_case_of_fire_or_disorder_.mp3',
+  '/audio/audio_16_What_is__the_nineth_general_order__.mp3',
+  '/audio/audio_17_To_call_the_corporal_of_the_guard_in_any_case_not_covered_by_instructions_.mp3',
+  '/audio/audio_18_What_is__the_tenth_general_order__.mp3',
+  '/audio/audio_19_To_salute_all_officers_and_all_colors_and_standards_not_cased_.mp3',
+  '/audio/audio_20_What_is__the_evelenth_general_order__.mp3',
+  '/audio/audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3'
+];
 
-    const totalPairs = files.length / 2;
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(cacheName).then(cache => cache.addAll(assets))
+  );
+});
 
-    // Pause between question and answer for each pair (in seconds)
-    const interDelays = [
-      5,   // 1st gen order
-      10,  // 2nd gen order
-      7,   // 3rd gen order
-      8,   // 4th gen order
-      4,   // 5th gen order
-      18,  // 6th gen order
-      5,   // 7th gen order
-      6,   // 8th gen order
-      9,   // 9th gen order
-      8,   // 10th gen order
-      17   // 11th gen order
-    ];
-
-    // Global timing (seconds)
-    const initialDelay = 10;      // wait before first question
-    const postAnswerDelay = 10;   // wait after each answer
-
-    let currentPair = 0;
-    let running = false;
-    const audio = new Audio();
-
-    const startBtn = document.getElementById('start');
-    const stopBtn  = document.getElementById('stop');
-
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function runQuiz() {
-      running = true;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-
-      // Initial lead‑in
-      await sleep(initialDelay * 1000);
-
-      while (running) {
-        // Play question
-        audio.src = files[currentPair * 2];
-        try {
-          await audio.play();
-          await new Promise(res => { audio.onended = res; });
-        } catch (e) {
-          console.error('Question play failed:', e);
-          break;
-        }
-
-        // Custom pause before answer
-        const gap = interDelays[currentPair] || 0;
-        await sleep(gap * 1000);
-
-        // Play answer
-        audio.src = files[currentPair * 2 + 1];
-        try {
-          await audio.play();
-          await new Promise(res => { audio.onended = res; });
-        } catch (e) {
-          console.error('Answer play failed:', e);
-          break;
-        }
-
-        // Post‑answer pause
-        await sleep(postAnswerDelay * 1000);
-
-        // Loop to next pair
-        currentPair = (currentPair + 1) % totalPairs;
-      }
-    }
-
-    startBtn.onclick = runQuiz;
-    stopBtn.onclick = () => {
-      running = false;
-      audio.pause();
-      stopBtn.disabled = true;
-      startBtn.disabled = false;
-    };
-  </script>
-</body>
-</html>
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
+  );
+});
