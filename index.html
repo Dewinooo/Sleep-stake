@@ -4,9 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marine General Orders Audio Quiz</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(e => console.error('SW registration failed:', e));
+    }
+  </script>
   <style>
-    body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #111; color: #eee; font-family: sans-serif; margin: 0; }
-    button { margin: 0.5em; padding: 1em 2em; font-size: 1em; cursor: pointer; }
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
+      margin: 0;
+    }
+    button {
+      margin: 0.5em;
+      padding: 1em 2em;
+      font-size: 1em;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -16,7 +41,7 @@
     <button id="stop" disabled>Stop</button>
   </div>
   <script>
-    // 1. List all your audio filenames (questions at even indices, answers at odd)
+    // List audio files: questions at even indices, answers at odd
     const files = [
       'audio/audio_0_What_is__the_first_general_order_.mp3',
       'audio/audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
@@ -39,31 +64,17 @@
       'audio/audio_18_What_is__the_tenth_general_order__.mp3',
       'audio/audio_19_To_salute_all_officers_and_all_colors_and_standards_not_cased_.mp3',
       'audio/audio_20_What_is__the_evelenth_general_order__.mp3',
-      'audio/audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3',
-      // … continue up to your last file, e.g.: 'audio/audio_21_last text.mp3'
+      'audio/audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3'
     ];
 
-    // 2. Number of Q/A pairs (half the total files)
     const totalPairs = files.length / 2;
 
-    // 3. Custom pause between question and answer for each pair (seconds)
-    const interDelays = [
-      5,  // 1st gen order
-      10, // 2nd gen order
-      7,  // 3rd gen order
-      8,  // 4th gen order
-      4,  // 5th gen order
-      18, // 6th gen order
-      5,  // 7th gen order
-      6,  // 8th gen order
-      9,  // 9th gen order
-      8,  // 10th gen order
-      17  // 11th gen order
-    ];
+    // Delays between question and answer for each pair (seconds)
+    const interDelays = [5,10,7,8,4,18,5,6,9,8,17];
 
-    // 4. Global timing (seconds)
-    const initialDelay = 10;      // wait before first question
-    const postAnswerDelay = 10;   // wait after each answer
+    // Global timing (seconds)
+    const initialDelay = 10;      // before first question
+    const postAnswerDelay = 10;   // after each answer
 
     let currentPair = 0;
     let running = false;
@@ -87,32 +98,22 @@
       while (running) {
         // play question
         audio.src = files[currentPair * 2];
-        try {
-          await audio.play();
-          await new Promise(res => { audio.onended = res; });
-        } catch (e) {
-          console.error('Question play failed:', e);
-          break;
-        }
+        await audio.play().catch(e => { console.error('Play error:', e); running=false; });
+        if (!running) break;
+        await new Promise(res => audio.onended = res);
 
-        // custom pause before answer
-        const gap = interDelays[currentPair] || 0;
-        await sleep(gap * 1000);
+        // pause before answer
+        await sleep((interDelays[currentPair] || 0) * 1000);
 
         // play answer
         audio.src = files[currentPair * 2 + 1];
-        try {
-          await audio.play();
-          await new Promise(res => { audio.onended = res; });
-        } catch (e) {
-          console.error('Answer play failed:', e);
-          break;
-        }
+        await audio.play().catch(e => { console.error('Play error:', e); running=false; });
+        if (!running) break;
+        await new Promise(res => audio.onended = res);
 
-        // post-answer pause
+        // pause after answer
         await sleep(postAnswerDelay * 1000);
 
-        // loop
         currentPair = (currentPair + 1) % totalPairs;
       }
     }
