@@ -1,105 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marine General Orders Audio Quiz</title>
-
-  <!-- PWA manifest -->
-  <link rel="manifest" href="./manifest.json">
-
-  <!-- Service-Worker registration -->
+  <link rel="manifest" href="./manifest.json" />
   <script>
-    // Root-level audio files: questions at even indices, answers at odd
-    const files = [
-      'audio_0_What_is__the_first_general_order_.mp3',
-      'audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
-      'audio_2_What_is__the_second_general_order__.mp3',
-      'audio_3__To_walk_my_post_in_a_military_manner__keeping_always_on-the-alert_and_observing_everything_that_tak~.mp3',
-      'audio_4_What_is__the_third_general_order__.mp3',
-      'audio_5__To_report_all_violations_of_orders_I_am_instructed_to_enforce_.mp3',
-      'audio_6_What_is__the_fourth_general_order__.mp3',
-      'audio_7__To_repeat_all_calls_from_posts_more_distant_from_the_guardhouse_than_my_own_.mp3',
-      'audio_8_What_is__the_fifth_general_order__.mp3',
-      'audio_9__To_quit_my_post_only_when_properly_relieved_.mp3',
-      'audio_10_What_is__the_sixth_general_order__.mp3',
-      'audio_11__To_receive__obey__and_pass_on_to_the_sentry_who_relieves_me__all_orders_from_the_commanding_officer~.mp3',
-      'audio_12_What_is__the_seventh_general_order__.mp3',
-      'audio_13__To_talk_to_no_one_except_in_line_of_duty_.mp3',
-      'audio_14_What_is__the_eigtht_general_order__.mp3',
-      'audio_15__To_give_the_alarm_in_case_of_fire_or_disorder_.mp3',
-      'audio_16_What_is__the_nineth_general_order__.mp3',
-      'audio_17_To_call_the_corporal_of_the_guard_in_any_case_not_covered_by_instructions_.mp3',
-      'audio_18_What_is__the_tenth_general_order__.mp3',
-      'audio_19_To_salute_all_officers_and_all_colors_and_standards_not_cased_.mp3',
-      'audio_20_What_is__the_evelenth_general_order__.mp3',
-      'audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3'
-    ];
-
-    const totalPairs = files.length / 2;
-    const interDelays = [5,10,7,8,4,18,5,6,9,8,17];
-    const initialDelay = 0;
-    const postAnswerDelay = 4;
-
-    let running = false;
-    const audioEl = new Audio();
-    let lastSrc = '';
-
-    const startBtn = document.getElementById('start');
-    const stopBtn  = document.getElementById('stop');
-
-    function sleep(ms) {
-      return new Promise(res => setTimeout(res, ms));
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
     }
-
-    async function runQuiz() {
-      running = true;
-      startBtn.disabled = true;
-      stopBtn.disabled  = false;
-
-      if (initialDelay > 0) await sleep(initialDelay * 1000);
-
-      while (running) {
-        const pair = Math.floor(Math.random() * totalPairs);
-
-        // play question
-        lastSrc = files[pair * 2];
-        audioEl.src = lastSrc;
-        audioEl.play().catch(e => console.error('Play error:', e));
-        await new Promise(r => audioEl.onended = r);
-
-        // pause before answer
-        await sleep(interDelays[pair] * 1000);
-
-        // play answer
-        lastSrc = files[pair * 2 + 1];
-        audioEl.src = lastSrc;
-        audioEl.play().catch(e => console.error('Play error:', e));
-        await new Promise(r => audioEl.onended = r);
-
-        // post-answer pause
-        await sleep(postAnswerDelay * 1000);
-      }
-    }
-
-    // Resume playback if app regains focus
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && running && audioEl.paused && lastSrc) {
-        audioEl.play().catch(e => console.error('Resume failed:', e));
-      }
-    });
-
-    startBtn.onclick = () => {
-      if (!running) runQuiz();
-    };
-    stopBtn.onclick = () => {
-      running = false;
-      audioEl.pause();
-      stopBtn.disabled  = true;
-      startBtn.disabled = false;
-    };
   </script>
-
   <style>
     body {
       display: flex;
@@ -113,7 +23,7 @@
       font-family: sans-serif;
     }
     button {
-      margin: .5em;
+      margin: 0.5em;
       padding: 1em 2em;
       font-size: 1em;
       cursor: pointer;
@@ -126,14 +36,13 @@
     <button id="start">Play</button>
     <button id="stop" disabled>Stop</button>
   </div>
-
   <script>
-    // Root‑level audio files: questions at even indices, answers at odd, total 11 pairs
+    // Root-level audio files: question at even index, answer at odd
     const files = [
       'audio_0_What_is__the_first_general_order_.mp3',
       'audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
       'audio_2_What_is__the_second_general_order__.mp3',
-      'audio_3__To_walk_my_post_in_a_military_manner__keeping_always_on-the-alert_and_observing_everything_that_tak~.mp3',
+      'audio_3__To_walk_my_post_in_a_military_manner__keeping_always_on_the_alert_and_observing_everything_that_tak~.mp3',
       'audio_4_What_is__the_third_general_order__.mp3',
       'audio_5__To_report_all_violations_of_orders_I_am_instructed_to_enforce_.mp3',
       'audio_6_What_is__the_fourth_general_order__.mp3',
@@ -153,15 +62,8 @@
       'audio_20_What_is__the_evelenth_general_order__.mp3',
       'audio_21__To_be_especially_watchful_at_night__and_during_the_time_for_challenging__to_challenge_all_persons_o~.mp3'
     ];
-
-    const totalPairs = files.length / 2;
-
-    // Pause between question & answer (seconds) for each pair
     const interDelays = [5,10,7,8,4,18,5,6,9,8,17];
-
-    // Global timing (seconds)
-    const initialDelay = 0;   // start immediately
-    const postAnswerDelay = 4; // wait 4s after answer
+    const postAnswerDelay = 4 * 1000;
 
     let running = false;
     const audioEl = new Audio();
@@ -169,7 +71,19 @@
     const stopBtn = document.getElementById('stop');
 
     function sleep(ms) {
-      return new Promise(res => setTimeout(res, ms));
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    async function playFile(src) {
+      audioEl.src = src;
+      try {
+        await audioEl.play();
+      } catch (e) {
+        console.error('Play error:', e);
+        return false;
+      }
+      await new Promise(res => audioEl.onended = res);
+      return true;
     }
 
     async function runQuiz() {
@@ -177,39 +91,29 @@
       startBtn.disabled = true;
       stopBtn.disabled = false;
 
-      if (initialDelay > 0) await sleep(initialDelay * 1000);
-
       while (running) {
-        // choose random pair index
-        const pair = Math.floor(Math.random() * totalPairs);
+        const pair = Math.floor(Math.random() * (files.length / 2));
+        const question = files[pair * 2];
+        const answer = files[pair * 2 + 1];
 
-        // play question
-        audioEl.src = files[pair * 2];
-        await audioEl.play().catch(e => { console.error(e); running = false; });
-        if (!running) break;
-        await new Promise(r => audioEl.onended = r);
-
-        // custom pause
+        if (!await playFile(question)) break;
         await sleep(interDelays[pair] * 1000);
-
-        // play answer
-        audioEl.src = files[pair * 2 + 1];
-        await audioEl.play().catch(e => { console.error(e); running = false; });
-        if (!running) break;
-        await new Promise(r => audioEl.onended = r);
-
-        // post-answer pause
-        await sleep(postAnswerDelay * 1000);
+        if (!await playFile(answer)) break;
+        await sleep(postAnswerDelay);
       }
+
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
     }
 
-    startBtn.onclick = runQuiz;
-    stopBtn.onclick = () => {
+    startBtn.addEventListener('click', () => {
+      if (!running) runQuiz();
+    });
+
+    stopBtn.addEventListener('click', () => {
       running = false;
       audioEl.pause();
-      stopBtn.disabled = true;
-      startBtn.disabled = false;
-    };
+    });
   </script>
 </body>
 </html>
