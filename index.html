@@ -1,1 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marine General Orders Audio Quiz</title>
+  <style>
+    body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #111; color: #eee; font-family: sans-serif; margin: 0; }
+    button { margin: 0.5em; padding: 1em 2em; font-size: 1em; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Marine General Orders Audio Quiz</h1>
+  <div>
+    <button id="start">Play</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
+  <script>
+    // 1. List your question and answer audio files in corresponding order:
+    const questions = [
+      'audio/q1.mp3',
+      'audio/q2.mp3',
+      'audio/q3.mp3',
+      // … add all question files here
+    ];
+    const answers = [
+      'audio/a1.mp3',
+      'audio/a2.mp3',
+      'audio/a3.mp3',
+      // … add all answer files here
+    ];
+
+    // 2. Specify the pause between question and answer (in seconds) for each index:
+    const interDelays = [
+      /* e.g. 8, 12, 10, … */
+    ];
+
+    // 3. Global timing controls (in seconds):
+    const initialDelay = 10;      // wait before the very first question
+    const postAnswerDelay = 10;   // wait after each answer before next question
+
+    let currentIndex = 0;
+    let running = false;
+    const audio = new Audio();
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function runQuiz() {
+      running = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+
+      // initial wait
+      await sleep(initialDelay * 1000);
+
+      while (running) {
+        // play question
+        audio.src = questions[currentIndex];
+        try {
+          await audio.play();
+          await new Promise(r => { audio.onended = r; });
+        } catch (e) {
+          console.error('Question playback failed:', e);
+          break;
+        }
+
+        // wait custom gap before answer
+        const gap = interDelays[currentIndex] || 0;
+        await sleep(gap * 1000);
+
+        // play answer
+        audio.src = answers[currentIndex];
+        try {
+          await audio.play();
+          await new Promise(r => { audio.onended = r; });
+        } catch (e) {
+          console.error('Answer playback failed:', e);
+          break;
+        }
+
+        // wait after answer
+        await sleep(postAnswerDelay * 1000);
+
+        // advance (loops back at end)
+        currentIndex = (currentIndex + 1) % questions.length;
+      }
+    }
+
+    const startBtn = document.getElementById('start');
+    const stopBtn  = document.getElementById('stop');
+
+    startBtn.onclick = runQuiz;
+    stopBtn.onclick = () => {
+      running = false;
+      audio.pause();
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+    };
+  </script>
+</body>
+</html>
 
