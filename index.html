@@ -46,7 +46,7 @@
   </div>
 
   <script>
-    // Root-level audio files: questions at even indices, answers at odd, total 11 pairs
+    // Root-level audio files: questions at even indices, answers at odd — total 11 pairs
     const files = [
       'audio_0_What_is__the_first_general_order_.mp3',
       'audio_1_To_take_charge_of_this_post_and_all_government_property_in_view.mp3',
@@ -73,11 +73,7 @@
     ];
 
     const totalPairs = files.length / 2;
-
-    // Pause between question & answer (seconds) for each pair
     const interDelays = [5,10,7,8,4,18,5,6,9,8,17];
-
-    // Global timing (seconds)
     const initialDelay = 0;   // start immediately
     const postAnswerDelay = 4; // wait 4s after answer
 
@@ -98,35 +94,39 @@
       if (initialDelay > 0) await sleep(initialDelay * 1000);
 
       while (running) {
-        // choose random pair index
-        const pair = Math.floor(Math.random() * totalPairs);
+        // pick a random pair, skipping index 1 (second general order)
+        let pair;
+        do {
+          pair = Math.floor(Math.random() * totalPairs);
+        } while (pair === 1);
 
         // play question
         audioEl.src = files[pair * 2];
         await audioEl.play().catch(e => { console.error(e); running = false; });
         if (!running) break;
-        await new Promise(r => audioEl.onended = r);
+        await new Promise(res => audioEl.onended = res);
 
-        // custom pause
+        // custom pause before answer
         await sleep(interDelays[pair] * 1000);
 
         // play answer
         audioEl.src = files[pair * 2 + 1];
         await audioEl.play().catch(e => { console.error(e); running = false; });
         if (!running) break;
-        await new Promise(r => audioEl.onended = r);
+        await new Promise(res => audioEl.onended = res);
 
         // post-answer pause
         await sleep(postAnswerDelay * 1000);
       }
+
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
     }
 
     startBtn.onclick = runQuiz;
     stopBtn.onclick = () => {
       running = false;
       audioEl.pause();
-      stopBtn.disabled = true;
-      startBtn.disabled = false;
     };
   </script>
 </body>
